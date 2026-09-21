@@ -146,23 +146,20 @@ function versionPage(release, newer, older) {
   });
 }
 
-function repositoryLanding(sorted) {
-  return `# 微信 Android 历史版本 / WeChat for Android Version History\n\n> [!IMPORTANT]\n> 🌐 **[打开在线网站 · Open the website](${publishedSite}/)**\n\n## 选择语言 / Choose a language\n\n- [简体中文：${sorted.length} 个历史版本](./zh/)\n- [English: ${sorted.length} historical versions](./en/)\n`;
-}
-
-function repositoryIndex(sorted, locale) {
+function repositoryIndex(sorted, locale, isRoot = false) {
   const english = locale === 'en';
+  const versionBase = isRoot ? './zh/' : './';
   const years = new Map();
   for (const release of sorted) {
     const year = release.published.slice(0, 4);
     if (!years.has(year)) years.set(year, []);
     years.get(year).push(release);
   }
-  const sections = [...years].map(([year, group]) => `## ${year}${english ? '' : ' 年'}\n\n| ${english ? 'Version | Release date | APK files' : '版本 | 发布日期 | 安装包'} |\n| --- | --- | ---: |\n${group.map(release => `| [${english ? 'WeChat for Android' : '微信 Android'} ${release.version}](./${release.version}/) | ${release.published} | ${release.downloads.length} |`).join('\n')}`).join('\n\n');
+  const sections = [...years].map(([year, group]) => `## ${year}${english ? '' : ' 年'}\n\n| ${english ? 'Version | Release date | APK files' : '版本 | 发布日期 | 安装包'} |\n| --- | --- | ---: |\n${group.map(release => `| [${english ? 'WeChat for Android' : '微信 Android'} ${release.version}](${versionBase}${release.version}/) | ${release.published} | ${release.downloads.length} |`).join('\n')}`).join('\n\n');
   const count = sorted.reduce((sum, release) => sum + release.downloads.length, 0);
   return english
-    ? `# WeChat for Android Historical Versions\n\n[🌐 Browse the website](${publishedSite}/) · [简体中文](../zh/)\n\n${sorted.length} versions and ${count} official APK links. Select a version to view its download links.\n\n${sections}\n`
-    : `# 微信 Android 历史版本下载\n\n[🌐 浏览在线网站](${publishedSite}/) · [English](../en/)\n\n共 ${sorted.length} 个版本、${count} 个安装包。点击版本号查看官方下载地址。\n\n${sections}\n`;
+    ? `# WeChat for Android Historical Versions\n\n[中文](../) | **English**\n\n[🌐 Browse the website](${publishedSite}/)\n\n${sorted.length} versions and ${count} official APK links. Select a version to view its download links.\n\n${sections}\n`
+    : `# 微信 Android 历史版本下载\n\n**中文** | [English](${isRoot ? './en/' : '../en/'})\n\n> [!IMPORTANT]\n> 🌐 **[打开在线网站 · Open the website](${publishedSite}/)**\n\n共 ${sorted.length} 个版本、${count} 个安装包。点击版本号查看官方下载地址。\n\n${sections}\n`;
 }
 
 function repositoryVersion(release, newer, older, locale) {
@@ -189,7 +186,7 @@ function write(relativePath, content, destination = output) {
 validate();
 const sorted = [...releases].sort(compareVersions);
 if (!check) fs.rmSync(output, { recursive: true, force: true });
-write('README.md', repositoryLanding(sorted), root);
+write('README.md', repositoryIndex(sorted, 'zh', true), root);
 for (const locale of ['zh', 'en']) {
   write(`${locale}/README.md`, repositoryIndex(sorted, locale), root);
   sorted.forEach((release, index) => write(`${locale}/${release.version}/README.md`, repositoryVersion(release, sorted[index - 1], sorted[index + 1], locale), root));

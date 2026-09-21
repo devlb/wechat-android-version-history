@@ -1,6 +1,8 @@
 # WeChat for Android Historical Versions
 
-[🌐 Browse the website](https://devlb.github.io/wechat-android-version-history/) · [简体中文](../zh/)
+[中文](../) | **English**
+
+[🌐 Browse the website](https://devlb.github.io/wechat-android-version-history/)
 
 133 versions and 172 official APK links. Select a version to view its download links.
 

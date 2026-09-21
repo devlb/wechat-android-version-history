@@ -1,6 +1,9 @@
 # 微信 Android 历史版本下载
 
-[🌐 浏览在线网站](https://devlb.github.io/wechat-android-version-history/) · [English](../en/)
+**中文** | [English](../en/)
+
+> [!IMPORTANT]
+> 🌐 **[打开在线网站 · Open the website](https://devlb.github.io/wechat-android-version-history/)**
 
 共 133 个版本、172 个安装包。点击版本号查看官方下载地址。
 
