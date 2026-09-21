@@ -1,0 +1,13 @@
+{
+  "name": "android-wechat-version-archive",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node src/build.mjs",
+    "check": "node src/build.mjs --check"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
