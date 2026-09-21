@@ -8,4 +8,4 @@
 
 These links go directly to Tencent's official download domain. This repository does not host APK files.
 
-[All versions](../) · [简体中文](../../zh/8.0.64/) · [Newer version 8.0.65](../8.0.65/) · [Older version 8.0.63](../8.0.63/)
+[View this version on the website](https://devlb.github.io/wechat-android-version-history/en/versions/8.0.64/) · [All versions](../) · [简体中文](../../zh/8.0.64/) · [Newer version 8.0.65](../8.0.65/) · [Older version 8.0.63](../8.0.63/)
