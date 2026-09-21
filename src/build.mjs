@@ -7,6 +7,7 @@ const output = path.join(root, 'site');
 const releases = JSON.parse(fs.readFileSync(path.join(root, 'data/releases.json'), 'utf8'));
 const check = process.argv.includes('--check');
 const baseUrl = process.env.SITE_URL?.replace(/\/$/, '');
+const publishedSite = 'https://devlb.github.io/wechat-android-version-history';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -145,21 +146,32 @@ function versionPage(release, newer, older) {
   });
 }
 
-function repositoryIndex(sorted) {
+function repositoryLanding(sorted) {
+  return `# 微信 Android 历史版本 / WeChat for Android Version History\n\n> [!IMPORTANT]\n> 🌐 **[打开在线网站 · Open the website](${publishedSite}/)**\n\n## 选择语言 / Choose a language\n\n- [简体中文：${sorted.length} 个历史版本](./zh/)\n- [English: ${sorted.length} historical versions](./en/)\n`;
+}
+
+function repositoryIndex(sorted, locale) {
+  const english = locale === 'en';
   const years = new Map();
   for (const release of sorted) {
     const year = release.published.slice(0, 4);
     if (!years.has(year)) years.set(year, []);
     years.get(year).push(release);
   }
-  const sections = [...years].map(([year, group]) => `## ${year} 年\n\n| 版本 | 发布日期 | 安装包 |\n| --- | --- | ---: |\n${group.map(release => `| [微信 Android ${release.version}](./${release.version}/) | ${release.published} | ${release.downloads.length} |`).join('\n')}`).join('\n\n');
-  return `# 微信 Android 历史版本下载\n\n[浏览在线版本档案](https://devlb.github.io/wechat-android-version-history/)\n\n共 ${sorted.length} 个版本，${sorted.reduce((sum, release) => sum + release.downloads.length, 0)} 个安装包。点击版本号查看对应的官方下载地址。\n\n${sections}\n`;
+  const sections = [...years].map(([year, group]) => `## ${year}${english ? '' : ' 年'}\n\n| ${english ? 'Version | Release date | APK files' : '版本 | 发布日期 | 安装包'} |\n| --- | --- | ---: |\n${group.map(release => `| [${english ? 'WeChat for Android' : '微信 Android'} ${release.version}](./${release.version}/) | ${release.published} | ${release.downloads.length} |`).join('\n')}`).join('\n\n');
+  const count = sorted.reduce((sum, release) => sum + release.downloads.length, 0);
+  return english
+    ? `# WeChat for Android Historical Versions\n\n[🌐 Browse the website](${publishedSite}/) · [简体中文](../zh/)\n\n${sorted.length} versions and ${count} official APK links. Select a version to view its download links.\n\n${sections}\n`
+    : `# 微信 Android 历史版本下载\n\n[🌐 浏览在线网站](${publishedSite}/) · [English](../en/)\n\n共 ${sorted.length} 个版本、${count} 个安装包。点击版本号查看官方下载地址。\n\n${sections}\n`;
 }
 
-function repositoryVersion(release, newer, older) {
-  const downloads = release.downloads.map(download => `| \`${download.filename}\` | [官方下载](${download.url}) |`).join('\n');
-  const neighbors = [newer, older].filter(Boolean).map(item => `[${item === newer ? '较新' : '较早'}版本 ${item.version}](../${item.version}/)`).join(' · ');
-  return `# 微信 Android ${release.version} 历史版本官方下载\n\n**版本号：** ${release.version}　 **发布日期：** ${release.published}　 **安装包：** ${release.downloads.length} 个\n\n| 安装包文件名 | 下载地址 |\n| --- | --- |\n${downloads}\n\n以上链接指向腾讯官方域名；本仓库不保存 APK 文件。\n\n[查看网页版详情](https://devlb.github.io/wechat-android-version-history/versions/${release.version}/) · [返回全部版本](../)${neighbors ? ` · ${neighbors}` : ''}\n`;
+function repositoryVersion(release, newer, older, locale) {
+  const english = locale === 'en';
+  const downloads = release.downloads.map(download => `| \`${download.filename}\` | [${english ? 'Download from Tencent' : '官方下载'}](${download.url}) |`).join('\n');
+  const neighbors = [newer, older].filter(Boolean).map(item => `[${english ? `${item === newer ? 'Newer' : 'Older'} version` : `${item === newer ? '较新' : '较早'}版本`} ${item.version}](../${item.version}/)`).join(' · ');
+  return english
+    ? `# WeChat for Android ${release.version} Historical Version Download\n\n**Version:** ${release.version} · **Release date:** ${release.published} · **APK files:** ${release.downloads.length}\n\n| APK filename | Official download |\n| --- | --- |\n${downloads}\n\nThese links go directly to Tencent's official download domain. This repository does not host APK files.\n\n[All versions](../) · [简体中文](../../zh/${release.version}/)${neighbors ? ` · ${neighbors}` : ''}\n`
+    : `# 微信 Android ${release.version} 历史版本官方下载\n\n**版本号：** ${release.version} · **发布日期：** ${release.published} · **安装包：** ${release.downloads.length} 个\n\n| 安装包文件名 | 下载地址 |\n| --- | --- |\n${downloads}\n\n以上链接指向腾讯官方域名；本仓库不保存 APK 文件。\n\n[查看网页版详情](${publishedSite}/versions/${release.version}/) · [返回全部版本](../) · [English](../../en/${release.version}/)${neighbors ? ` · ${neighbors}` : ''}\n`;
 }
 
 function write(relativePath, content, destination = output) {
@@ -177,8 +189,11 @@ function write(relativePath, content, destination = output) {
 validate();
 const sorted = [...releases].sort(compareVersions);
 if (!check) fs.rmSync(output, { recursive: true, force: true });
-write('README.md', repositoryIndex(sorted), root);
-sorted.forEach((release, index) => write(`${release.version}/README.md`, repositoryVersion(release, sorted[index - 1], sorted[index + 1]), root));
+write('README.md', repositoryLanding(sorted), root);
+for (const locale of ['zh', 'en']) {
+  write(`${locale}/README.md`, repositoryIndex(sorted, locale), root);
+  sorted.forEach((release, index) => write(`${locale}/${release.version}/README.md`, repositoryVersion(release, sorted[index - 1], sorted[index + 1], locale), root));
+}
 write('index.html', homePage(sorted));
 write('assets/site.css', fs.readFileSync(path.join(root, 'src/site.css'), 'utf8'));
 write('assets/detail.css', fs.readFileSync(path.join(root, 'src/detail.css'), 'utf8'));
