@@ -8,6 +8,7 @@ const releases = JSON.parse(fs.readFileSync(path.join(root, 'data/releases.json'
 const check = process.argv.includes('--check');
 const baseUrl = process.env.SITE_URL?.replace(/\/$/, '');
 const publishedSite = 'https://devlb.github.io/wechat-android-version-history';
+const repositoryUrl = 'https://github.com/devlb/wechat-android-version-history';
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -158,7 +159,7 @@ function repositoryIndex(sorted, locale, isRoot = false) {
   const sections = [...years].map(([year, group]) => `## ${year}${english ? '' : ' 年'}\n\n| ${english ? 'Version | Release date | APK files' : '版本 | 发布日期 | 安装包'} |\n| --- | --- | ---: |\n${group.map(release => `| [${english ? 'WeChat for Android' : '微信 Android'} ${release.version}](${versionBase}${release.version}/) | ${release.published} | ${release.downloads.length} |`).join('\n')}`).join('\n\n');
   const count = sorted.reduce((sum, release) => sum + release.downloads.length, 0);
   return english
-    ? `# WeChat for Android Historical Versions\n\n[中文](../) | **English**\n\n[🌐 Browse the website](${publishedSite}/)\n\n${sorted.length} versions and ${count} official APK links. Select a version to view its download links.\n\n${sections}\n`
+    ? `# WeChat for Android Historical Versions\n\n[中文](${repositoryUrl}) | **English**\n\n[🌐 Browse the website](${publishedSite}/)\n\n${sorted.length} versions and ${count} official APK links. Select a version to view its download links.\n\n${sections}\n`
     : `# 微信 Android 历史版本下载\n\n**中文** | [English](${isRoot ? './en/' : '../en/'})\n\n> [!IMPORTANT]\n> 🌐 **[打开在线网站 · Open the website](${publishedSite}/)**\n\n共 ${sorted.length} 个版本、${count} 个安装包。点击版本号查看官方下载地址。\n\n${sections}\n`;
 }
 

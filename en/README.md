@@ -1,6 +1,6 @@
 # WeChat for Android Historical Versions
 
-[中文](../) | **English**
+[中文](https://github.com/devlb/wechat-android-version-history) | **English**
 
 [🌐 Browse the website](https://devlb.github.io/wechat-android-version-history/)
 
